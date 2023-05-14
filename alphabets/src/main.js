@@ -1,5 +1,5 @@
 const fs = require("fs");
-const { applyStyle } = require("./applyStyle.js");
+const { applyStyle } = require("./style-text.js");
 
 const main = function () {
   const fileName = process.argv[2];
