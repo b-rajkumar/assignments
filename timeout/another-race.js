@@ -1,9 +1,10 @@
 class Participant {
-  #position;
+  #name;
   #symbol;
+  #position;
 
   constructor(name, symbol) {
-    this.name = name;
+    this.#name = name;
     this.#symbol = symbol;
     this.#position = 0;
   }
@@ -19,6 +20,10 @@ class Participant {
   get symbol() {
     return this.#symbol;
   }
+
+  get name() {
+    return this.#name;
+  }
 }
 
 class Race {
@@ -28,7 +33,7 @@ class Race {
 
   constructor(trackLength, ...participants) {
     this.#participants = [...participants];
-    this.#intervalIdS = Array(participants.length);
+    this.#intervalIdS = new Array(participants.length);
     this.#trackLength = trackLength;
   }
 
@@ -36,24 +41,31 @@ class Race {
     this.#participants.map((player, index) => {
       this.#intervalIdS[index] = setInterval(() => {
         this.#updatePlayerPos(player);
-        this.#hasWon(player);
-      }, 100);
+        this.#checkForWin(player);
+      }, 175);
     });
   }
 
   #updatePlayerPos(player) {
     player.updatePosition(Math.floor(1 + Math.random() * 10));
-    this.#display();
+    console.clear();
+    console.log(this.showStatus);
   }
 
-  #display() {
-    this.#participants.forEach((participant) =>
-      process.stdout.write(`${participant.name}: ${participant.position} `)
-    );
-    console.log();
+  get showStatus() {
+    let track = "";
+    this.#participants.forEach((participant) => {
+      const name = participant.name.padStart(8);
+      const position = participant.position;
+      const symbol = name + participant.symbol.padStart(position, "# ");
+      const lagBy = Math.max(this.#trackLength - position, 0);
+
+      track += `${symbol}${" ".repeat(lagBy)}|` + "\n";
+    });
+    return track;
   }
 
-  #hasWon(person) {
+  #checkForWin(person) {
     if (person.position >= this.#trackLength) {
       console.log(`${person.name} won!`);
       this.#end();
@@ -65,8 +77,19 @@ class Race {
   }
 }
 
-const raj = new Participant("raj", "🚘");
-const qasim = new Participant("qasim", "🚖");
-const biswa = new Participant("biswa", "🚔");
-const race = new Race(10, raj, qasim, biswa);
-race.start();
+const cars = ["🚘", "🚖", "🚔", "🚠"];
+const players = process.argv.slice(2);
+
+if (players.length > 4) {
+  const error = new Error(
+    "Race track can only handle 4 participants at a time"
+  );
+  throw error;
+}
+
+const participants = players.map(
+  (name, pos) => new Participant(name, cars[pos])
+);
+
+const raceTrack = new Race(80, ...participants);
+raceTrack.start();
