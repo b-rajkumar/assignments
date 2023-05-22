@@ -15,70 +15,41 @@ const makeGrid = (data) => {
     grid[y][x] = 1;
   })
 
-  return grid;
+  return { startPoint: data[0], grid };
 };
 
-const isPointInside = (point, grid) => {
-  let boundaries = 0;
+const getPoints = (pointsInside, point, grid, coveredPoints) => {
   const [y, x] = point;
-  const maxY = grid.length;
-  const maxX = grid[0].length;
-
-  for(let i = y - 1; i >= 0; i--) {
-    if(grid[i][x] === 1) {
-      boundaries += 1;
-      break;
-    }
-  }
-
-  for(let i = x - 1; i >= 0; i--) {
-    if(grid[y][i] === 1) {
-      boundaries += 1;
-      break;
-    }
-  }
-
-  for(let i = y + 1; i < maxY; i++) {
-    if(grid[i][x] === 1) {
-      boundaries += 1;
-      break;
-    }
-  }
-
-  for(let i = x + 1; i < maxX; i++) {
-    if(grid[y][i] === 1) {
-      boundaries += 1;
-      break;
-    }
-  }
-
-  return boundaries === 4;
+  if(grid[y][x] === 1 || coveredPoints[y][x] === 1) return;
+  coveredPoints[y][x] = 1;
+  pointsInside.push(point);
+  getPoints(pointsInside, [y + 1, x], grid, coveredPoints);
+  getPoints(pointsInside, [y, x + 1], grid, coveredPoints);
+  getPoints(pointsInside, [y - 1, x], grid, coveredPoints);
+  getPoints(pointsInside, [y, x - 1], grid, coveredPoints);
 };
 
 const main = () => {
-  const inputPoints = [[1, 3],
-  [0, 3],
-  [1, 2],
-  [1, 4],
-  [2, 1],
-  [2, 5],
-  [3, 1],
-  [3, 6],
-  [4, 2],
-  [4, 5],
-  [5, 3],
-  [5, 4]];
+  const inputPoints = [
+    [1, 3],
+    [0, 3],
+    [1, 2],
+    [1, 4],
+    [2, 1],
+    [2, 5],
+    [3, 1],
+    [3, 6],
+    [4, 2],
+    [4, 5],
+    [5, 3],
+    [5, 4]];
+
   const pointsInside = [];
-  const grid = makeGrid(inputPoints);
-  const maxY = grid.length;
-  const maxX = grid[0].length;
 
-  for(let y = 0; y < maxY; y++) {
-    for(let x = 0; x < maxX; x++) {
-      if(isPointInside([y, x], grid)) pointsInside.push([y, x]);
-    }
-  }
+  const { startPoint, grid } = makeGrid(inputPoints);
+  const coveredPoints = Array(grid.length).fill(0).map(() => Array(grid[0].length).fill(0));
 
+  getPoints(pointsInside, startPoint, grid, coveredPoints);
   console.log(pointsInside);
 }
 
